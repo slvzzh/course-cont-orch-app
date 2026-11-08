@@ -2,6 +2,7 @@
 
 Простое FastAPI-приложение, которое используется как основа для лабораторной работы по Docker.
 
+Автор: Карпов Иван, ИСУ 466132
 ## 📁 Структура проекта
 
 ```
@@ -12,52 +13,17 @@ simple_example/
 └── README.md
 ```
 
-## 💻 Локальный запуск (без Docker)
-
-### 1. Установить зависимости
+## 💻 Запуск
 
 ```bash
-cd simple_example
-pip install -r requirements.txt
+docker build -t karpov-assistant:final -f Dockerfile.optimized .
+docker run -d \
+--name karpov-assistant-final \
+-p 5462:5462 \
+-e APP_OWNER=karpov \
+-e APP_SECRET=secret \
+karpov-assistant:final
 ```
-
-### 2. Задать переменные окружения
-
-**macOS / Linux:**
-
-```bash
-export APP_OWNER=ВашеИмя
-export APP_SECRET=ваш_секретный_ключ
-```
-
-**Windows (PowerShell):**
-
-```powershell
-$env:APP_OWNER="ВашеИмя"
-$env:APP_SECRET="ваш_секретный_ключ"
-```
-
-**Windows (CMD):**
-
-```cmd
-set APP_OWNER=ВашеИмя
-set APP_SECRET=ваш_секретный_ключ
-```
-
-> Если не задать переменные, приложение запустится со значениями по умолчанию: `anonymous` / `default_secret`.
-
-### 3. Запустить сервер
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Флаг `--reload` автоматически перезапускает сервер при изменении кода.
-
-### 4. Открыть в браузере
-
-- Приложение: **http://localhost:8000**
-- Swagger UI: **http://localhost:8000/docs**
 
 ## 📡 Эндпоинты
 
@@ -76,21 +42,21 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ```bash
 # Главная
-curl http://localhost:8000/
+curl http://localhost:5462/
 
 # Погода в Москве
-curl http://localhost:8000/weather/Moscow
+curl http://localhost:5462/weather/Moscow
 
 # Проверка секретного ключа
-curl http://localhost:8000/secret/ваш_секретный_ключ
+curl http://localhost:5462/secret/ваш_секретный_ключ
 
 # Создать заметку
-curl -X POST http://localhost:8000/notes \
+curl -X POST http://localhost:5462/notes \
   -H "Content-Type: application/json" \
   -d '{"text": "Моя первая заметка"}'
 
 # Получить заметки
-curl http://localhost:8000/notes
+curl http://localhost:5462/notes
 ```
 
 ## 🔑 Переменные окружения
@@ -118,9 +84,9 @@ curl http://localhost:8000/notes
 
 ## ✅ Как проверить, что всё работает
 
-1. `curl http://localhost:8000/` — должен вернуть приветствие с вашим именем
-2. `curl http://localhost:8000/me` — должен показать `secret_prefix` (первые 6 символов вашего ключа)
-3. `curl http://localhost:8000/secret/ваш_ключ` — должен вернуть `LAB2_SUCCESS_ВАШЕИМЯ`
-4. `curl http://localhost:8000/weather/London` — должен вернуть температуру, влажность, ветер
+1. `curl http://localhost:5462/` — должен вернуть приветствие с вашим именем
+2. `curl http://localhost:5462/me` — должен показать `secret_prefix` (первые 6 символов вашего ключа)
+3. `curl http://localhost:5462/secret/ваш_ключ` — должен вернуть `LAB2_SUCCESS_ВАШЕИМЯ`
+4. `curl http://localhost:5462/weather/London` — должен вернуть температуру, влажность, ветер
 5. `docker inspect --format='{{.State.Health.Status}}' personal-assistant` — должен вернуть `healthy`
 

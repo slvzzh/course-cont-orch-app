@@ -1,0 +1,83 @@
+% Замените поясняющий текст собственными результатами.
+% В шаблоне нет готового решения и обязательных внешних изображений.
+\reportelement{Введение}
+
+Цель работы: собираем свой образ приложения, уменьшаем его размер и добавляем проверку здоровья.~\ref{tab:parameters}
+
+\begin{table}[H]
+  \caption{Персональные параметры}\label{tab:parameters}
+  \centering
+  \begin{tabularx}{\textwidth}{|p{0.46\textwidth}|X|}
+    \hline
+    Параметр & Значение\\ \hline
+    Номер ИСУ & \StudentISU\\ \hline
+    Персональный порт & 5462\\ \hline
+    Персональный префикс & karpov\\ \hline
+    Окружение & linux/x86\_64\\ \hline
+  \end{tabularx}
+\end{table}
+
+Результат хранится в ветке \texttt{lab-\LabNumber} форка:
+\url{\RepositoryURL}. 
+
+\chapter{Первый рабочий образ}
+
+Собираем первый докер образ для приложения, запускаем контейнер и проверяем через команду curl (рис. 1):
+\reportscreenshot{step1-4.png}{Результат проверки работы curl}{fig:proof1}
+
+На рисунке~\ref{fig:proof1} видно что в ответе /me возвращается фамилия и в /secret виден флаг.
+
+
+\chapter{Оптимизация образа}
+Создадим новый файл Dockerfile.optimized, в котором настроим оптимизированную multistage сборку (рис. ~\ref{fig:proof2}): 
+
+\reportscreenshot{step2multistage.png}{Multistage сборка}{fig:proof2}
+
+Далее соберем образ и сравним размер со старым (рис. ~\ref{fig:proof3}):
+\reportscreenshot{step2.png}{Сравнение образов}{fig:proof3}
+Как видим, образ оказался меньше на 11 МБ. Связано это с тем, что промежуточные слои из предыдущего builder-этапа (временные данные pip) не попали в финальный образ, попали только нужные зависимости. Также отдельное копирование requirements позволяет ускорить последующие сборки, так как не нужно будет заново копировать и устанавливать зависимости из этого файла, если они не изменялись, возьмуться просто старые зависимости которые мы устанавливали при предыдущей сборке (докер не пересобирает слой если слой не был изменен).
+
+
+\chapter{.dockerignore}
+
+Соберем образ с .dockerignore (рис. ~\ref{fig:proof4}):
+\reportscreenshot{step3.png}{образ с .dockerignore}{fig:proof4}
+Без .dockerignore в образ мог попасть файл README.md и также могли бы попасть файлы окружения и файлы с секретами (паролями, токенами и т.д.), что могло бы привести к уязвимостям безопасности и утечке личной информации. Содержимое .dockerignore:
+\reportscreenshot{dockerignore.png}{.dockerignore}{fig:proof10}
+
+
+\chapter{Healthcheck - готовность к оркестрации}
+
+Добавим проверку healthcheck и установим curl в финальный образ, а потом сравним размеры образов (рис. ~\ref{fig:proof5}):
+\reportscreenshot{step4.png}{образ с curl и healthcheck}{fig:proof5}
+
+Итоговый образ стал весить 178 МБ, больше на 14 МБ чем раньше. Можно было обойтись и без curl, использовав urllib из стандартной библиотеки Python. 
+Далее запускаем контейнер и проверяем, что он healthy (рис. ~\ref{fig:proof6}):
+
+\reportscreenshot{step4healthy.png}{образ с curl и healthcheck}{fig:proof6}
+
+
+\chapter{Финальный артефакт и тегирование}
+
+Финальный артефакт работы(рис. ~\ref{fig:proof7}):
+\reportscreenshot{step5.png}{Артефакт}{fig:proof7}
+
+
+
+
+
+
+
+
+
+\reportelement{Заключение}
+В результате выполнения работы удалось собрать свой docker-образ, оптимизировать его через multi-stage сборку, настроить healthcheck. 
+
+% Оставьте только использованные источники и цитируйте их в тексте.
+\begin{thebibliography}{9}
+  \bibitem{docker-docs}
+  Docker Documentation: документация Docker.
+  URL: \url{https://docs.docker.com/}
+  (дата обращения: 09.11.2026).
+\end{thebibliography}
+

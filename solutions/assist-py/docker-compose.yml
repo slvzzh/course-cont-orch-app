@@ -36,13 +36,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - karpov-backend
     ports:
       - "${APP_PORT}:${APP_PORT}"
     
     # опишите ВАШ сервис: build, container_name, ports, environment, depends_on, networks
-
+  redis:
+    image: redis:7-alpine
+    container_name: karpov-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - karpov-backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 volumes:
   karpov-pgdata:
 

@@ -4,7 +4,8 @@ import json
 import logging
 import os
 import socket
-
+import json
+import redis
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -21,9 +22,8 @@ OWNER = os.getenv("APP_OWNER", "anonymous")
 SECRET_KEY = os.getenv("APP_SECRET", "default_secret")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 CACHE_TTL = int(os.getenv("CACHE_TTL", "300"))
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 HOSTNAME = socket.gethostname()
-
-redis_client: aioredis.Redis | None = None
 
 
 @asynccontextmanager

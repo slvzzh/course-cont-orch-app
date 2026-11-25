@@ -1,0 +1,64 @@
+# docker-compose.scale.yml
+services:
+  db:
+    image: postgres:15
+    container_name: karpov-postgres
+    networks:
+      - karpov-backend
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5462:5432"
+    volumes:
+      - karpov-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    
+    
+    # опишите ВАШУ БД: image, container_name, environment, volumes, networks, healthcheck
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=${APP_PORT}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - karpov-backend
+    ports:
+      - "${APP_PORT}"
+    
+    # опишите ВАШ сервис: build, container_name, ports, environment, depends_on, networks
+  redis:
+    image: redis:7-alpine
+    container_name: karpov-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - karpov-backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+volumes:
+  karpov-pgdata:
+
+networks:
+  karpov-backend:
+    driver: bridge

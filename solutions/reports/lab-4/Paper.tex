@@ -1,0 +1,90 @@
+% Замените поясняющий текст собственными результатами.
+% В шаблоне нет готового решения и обязательных внешних изображений.
+\reportelement{Введение}
+
+Переносим запуск приложения, PostgreSQL и Redis в Docker Compose и пробуем масштабирование.~\ref{tab:parameters}
+
+\begin{table}[H]
+  \caption{Персональные параметры}\label{tab:parameters}
+  \centering
+  \begin{tabularx}{\textwidth}{|p{0.46\textwidth}|X|}
+    \hline
+    Параметр & Значение\\ \hline
+    Номер ИСУ & \StudentISU\\ \hline
+    Персональный порт (Postgres) & 5462\\ \hline
+    Персональный порт (APP\_PORT) & 8032\\ \hline
+    Персональный порт (Redis, REDIS\_PORT) & 6402\\ \hline
+
+    Секретный ключ & secret32karpov\\ \hline
+    Имя базы данных & karpov32\\ \hline
+    Персональный префикс & karpov\\ \hline
+    Окружение & linux/x86\_64\\ \hline
+  \end{tabularx}
+\end{table}
+
+Результат хранится в ветке \texttt{lab-\LabNumber} форка:
+\url{\RepositoryURL}. 
+
+\chapter{Подготовка проекта для Docker Compose}
+
+Собираем приложения и образ postgres через compose, проверяем curl и docker ps (рис. 1):
+\reportscreenshot{1.png}{Результат проверки работы curl}{fig:proof1}
+
+На рисунке~\ref{fig:proof1} видно что контейнеры запустились и работают.
+
+
+\chapter{Запуск и проверка полного стека}
+Подключаем редис и запускаем полный стек:
+
+\reportscreenshot{5.png}{Запуск 3 контейнеров}{fig:proof2}
+
+Как видно, контейнеры запустились. Проверяем логи запуска:
+
+\reportscreenshot{2.png}{Логи запуска}{fig:proof3}
+
+Порядок запуска верный, сначала запускается postgres и redis, а потом только app. Далее проверяем кэш редиса:
+
+\reportscreenshot{6.png}{Проверка кэша}{fig:proof4}
+Как видно, кэш работает и данные отдает
+
+Прверяем сети:
+\reportscreenshot{7.png}{Сети}{fig:proof5}
+На картинке 5 видно, что все контейнеры находятся в сети.
+Проверяем volumes:
+\reportscreenshot{8.png}{Volumes}{fig:proof6}
+
+volume также присутствует.
+
+\chapter{Масштабирование сервиса}
+
+Пересоберем приложение с новым yml файлом с убранным container name для масштабирования и запустим с 3 экземплярами app с разными хостовыми портами:
+\reportscreenshot{9.png}{Запуск с масштабированием}{fig:proof7}
+
+Контейнеры успешно собрались. Проверим работоспособность:
+
+\reportscreenshot{10.png}{Проверка работоспособности}{fig:proof8}
+Видно, что все 3 приложения healthy и что работает кэш redis'а, при чем один на троих (первый раз source: api, второй раз source: cache, хотя обращались к разным инстансам приложения)
+
+
+
+\chapter{Финальные артефакты}
+Финальные артефакты работы:
+
+\reportscreenshot{11.png}{Создаем сеть}{fig:proof9}
+
+
+
+
+
+
+\reportelement{Заключение}
+В результате выполнения работы удалось собрать образы при помощи docker compose, настроить базу данных и сети, подключить redis для кэширования данных и запустить масштабируемый сервис с 3 экземплярами приложения.
+
+% Оставьте только использованные источники и цитируйте их в тексте.
+\begin{thebibliography}{9}
+  \bibitem{docker-docs}
+  Docker Documentation: документация Docker.
+  URL: \url{https://docs.docker.com/}
+  (дата обращения: 09.11.2026).
+\end{thebibliography}
+

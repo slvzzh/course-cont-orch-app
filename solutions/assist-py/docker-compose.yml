@@ -6,10 +6,11 @@ services:
     networks:
       - karpov-backend
     environment:
-      - PGPORT=${PGPORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5462:5432"
     volumes:
       - karpov-pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -29,6 +30,9 @@ services:
     container_name: app
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=${APP_PORT}
     depends_on:
       db:
         condition: service_healthy

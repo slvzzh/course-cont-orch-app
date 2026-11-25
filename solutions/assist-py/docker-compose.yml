@@ -33,6 +33,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${APP_PORT}
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       db:
         condition: service_healthy

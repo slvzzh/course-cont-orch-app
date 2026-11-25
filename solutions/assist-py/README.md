@@ -15,8 +15,11 @@ simple_example/
 ├── config/
 │   └── app.conf         # Конфиг для bind mount
 ├── docker-compose.yml   # Оркестрация всех сервисов
+├── docker-compose.scale.yml   # Оркестрация всех сервисов с масштабированием
 ├── Dockerfile           # Сборка образа приложения
+├── Dockerfile.optimized           # Сборка оптимизированного образа приложения (используется сейчас в docker-compose) 
 ├── .env                 # Переменные окружения (персональные!)
+├── .dockerignore                 # Игнор
 ├── requirements.txt     # Python-зависимости
 └── README.md
 ```
@@ -25,12 +28,20 @@ simple_example/
 
 ### 1. Настроить `.env`
 
-Отредактируйте файл `.env` — укажите **своё имя** и **свой порт**:
+Отредактируйте файл `.env` — укажите свои данные:
 
 ```bash
-APP_OWNER=ВашеИмя
-APP_SECRET=ваш_секретный_ключ
-APP_PORT=8000          # у каждого студента свой порт!
+APP_OWNER=свой
+APP_SECRET=свой
+APP_PORT=свой
+POSTGRES_USER=свой
+POSTGRES_PASSWORD=свой
+POSTGRES_DB=свой
+PGPORT=свой
+REDIS_PORT=свой
+CACHE_TTL=120
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+REDIS_URL=redis://redis:6379/0
 ```
 
 ### 2. Запустить все сервисы
@@ -40,7 +51,7 @@ docker compose up -d --build
 ```
 
 Эта команда:
-- Соберёт образ приложения из `Dockerfile`
+- Соберёт образ приложения из `Dockerfile.optimized`
 - Запустит PostgreSQL, Redis и FastAPI
 - Настроит сеть между контейнерами
 - Создаст volumes для данных
@@ -170,16 +181,18 @@ docker compose down -v        # остановить + удалить volumes
 | `POSTGRES_PASSWORD` | Пароль PostgreSQL | `postgres` |
 | `POSTGRES_DB` | Имя базы данных | `assistant_db` |
 | `REDIS_URL` | URL подключения к Redis | `redis://redis:6379/0` |
+| `DATABASE_URL` | URL подключения к базе | 'DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}'
+ |
 | `CACHE_TTL` | Время жизни кэша в секундах | `300` |
 
 ---
 
 ## Масштабирование
 
-Для демонстрации масштабирования уберите `container_name` у сервиса `app` в `docker-compose.yml` и запустите несколько реплик:
+Для демонстрации масштабирования запустите несколько реплик через файл:
 
 ```bash
-docker compose up -d --build --scale app=3
+docker compose up -f docker-compose.scale.yml -d --build --scale app=3
 ```
 
 Каждый контейнер вернёт свой `hostname` в ответе API — это позволяет увидеть, какой именно экземпляр обработал запрос.

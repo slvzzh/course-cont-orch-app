@@ -1,0 +1,47 @@
+# docker-compose.yml
+services:
+  db:
+    image: postgres:15
+    container_name: karpov-postgres
+    networks:
+      - karpov-backend
+    environment:
+      - PGPORT=${PGPORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - karpov-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    
+    
+    # опишите ВАШУ БД: image, container_name, environment, volumes, networks, healthcheck
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    container_name: app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - karpov-backend
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    
+    # опишите ВАШ сервис: build, container_name, ports, environment, depends_on, networks
+
+volumes:
+  karpov-pgdata:
+
+networks:
+  karpov-backend:
+    driver: bridge
